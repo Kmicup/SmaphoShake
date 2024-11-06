@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>加速度センサー検知</title>
+</head>
+<body>
+  <h1>加速度センサー検知</h1>
+  <p>スマホを動かして加速度が一定の閾値以下になると音が鳴ります。</p>
+  
+  <script>
+    // 閾値を設定
+    const threshold = 5; // 任意の数値に調整可能
+    let audio = new Audio('alert-sound.mp3'); // 音声ファイルのパス
+
+    // デバイスモーションイベントのリスナー
+    window.addEventListener('devicemotion', (event) => {
+      const acceleration = event.acceleration;
+      if (acceleration) {
+        const totalAcceleration = Math.sqrt(
+          (acceleration.x || 0) ** 2 +
+          (acceleration.y || 0) ** 2 +
+          (acceleration.z || 0) ** 2
+        );
+
+        // 加速度が閾値を下回った場合に音を鳴らす
+        if (totalAcceleration < threshold) {
+          audio.play();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
