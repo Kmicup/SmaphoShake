@@ -9,8 +9,11 @@
   <h1>加速度センサー検知</h1>
   <p>スマホを動かして加速度が一定の閾値以下になると音が鳴ります。</p>
 
+  <!-- 許可をリクエストするボタン -->
+  <button id="requestPermission">加速度センサーの許可をリクエスト</button>
+
   <!-- 加速度を表示するエリア -->
-  <div>
+  <div id="accelerationDisplay" style="display: none;">
     <p>X軸加速度: <span id="accelerationX">0</span></p>
     <p>Y軸加速度: <span id="accelerationY">0</span></p>
     <p>Z軸加速度: <span id="accelerationZ">0</span></p>
@@ -18,38 +21,62 @@
   </div>
 
   <script>
-    // 閾値を設定
-    const threshold = 5; // 任意の数値に調整可能
+    const threshold = 5; // 加速度の閾値
     let audio = new Audio('alert-sound.mp3'); // 音声ファイルのパス
 
     // DOM要素の取得
+    const accelerationDisplay = document.getElementById('accelerationDisplay');
+    const requestPermissionButton = document.getElementById('requestPermission');
     const accelerationX = document.getElementById('accelerationX');
     const accelerationY = document.getElementById('accelerationY');
     const accelerationZ = document.getElementById('accelerationZ');
     const totalAcceleration = document.getElementById('totalAcceleration');
 
-    // デバイスモーションイベントのリスナー
-    window.addEventListener('devicemotion', (event) => {
-      const acceleration = event.acceleration;
-      if (acceleration) {
-        // x, y, z 軸の加速度を取得
-        const x = acceleration.x || 0;
-        const y = acceleration.y || 0;
-        const z = acceleration.z || 0;
+    // 加速度センサーを有効にする関数
+    function enableAccelerometer() {
+      // デバイスモーションイベントのリスナー
+      window.addEventListener('devicemotion', (event) => {
+        const acceleration = event.acceleration;
+        if (acceleration) {
+          const x = acceleration.x || 0;
+          const y = acceleration.y || 0;
+          const z = acceleration.z || 0;
 
-        // 総合加速度を計算
-        const totalAccel = Math.sqrt(x ** 2 + y ** 2 + z ** 2);
+          // 総合加速度を計算
+          const totalAccel = Math.sqrt(x ** 2 + y ** 2 + z ** 2);
 
-        // HTMLの要素に加速度を表示
-        accelerationX.textContent = x.toFixed(2);
-        accelerationY.textContent = y.toFixed(2);
-        accelerationZ.textContent = z.toFixed(2);
-        totalAcceleration.textContent = totalAccel.toFixed(2);
+          // HTMLの要素に加速度を表示
+          accelerationX.textContent = x.toFixed(2);
+          accelerationY.textContent = y.toFixed(2);
+          accelerationZ.textContent = z.toFixed(2);
+          totalAcceleration.textContent = totalAccel.toFixed(2);
 
-        // 加速度が閾値を下回った場合に音を鳴らす
-        if (totalAccel < threshold) {
-          audio.play();
+          // 加速度が閾値を下回った場合に音を鳴らす
+          if (totalAccel < threshold) {
+            audio.play();
+          }
         }
+      });
+    }
+
+    // iOSデバイス用の許可リクエスト
+    requestPermissionButton.addEventListener('click', async () => {
+      if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        // iOS 13+の場合、許可をリクエスト
+        const permission = await DeviceMotionEvent.requestPermission();
+        if (permission === 'granted') {
+          // 許可が得られたら、加速度センサーを有効にして、表示エリアを表示
+          enableAccelerometer();
+          accelerationDisplay.style.display = 'block';
+          requestPermissionButton.style.display = 'none';
+        } else {
+          alert("加速度センサーへのアクセスが拒否されました。");
+        }
+      } else {
+        // iOS以外のデバイスでは、直接加速度センサーを有効にする
+        enableAccelerometer();
+        accelerationDisplay.style.display = 'block';
+        requestPermissionButton.style.display = 'none';
       }
     });
   </script>
