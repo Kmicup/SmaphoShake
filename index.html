@@ -7,7 +7,7 @@
 </head>
 <body>
   <h1>加速度センサー検知</h1>
-  <p>スマホを動かして加速度が一定の閾値以下になると音が鳴ります。</p>
+  <p>スマホを動かして総合加速度が0.5以下になると音が鳴ります。</p>
 
   <!-- 許可をリクエストするボタン -->
   <button id="requestPermission">加速度センサーの許可をリクエスト</button>
@@ -21,7 +21,7 @@
   </div>
 
   <script>
-    const threshold = 5; // 加速度の閾値
+    const threshold = 0.5; // 加速度の閾値を0.5に設定
     let audio = new Audio('alert-sound.mp3'); // 音声ファイルのパス
 
     // DOM要素の取得
@@ -62,10 +62,8 @@
     // iOSデバイス用の許可リクエスト
     requestPermissionButton.addEventListener('click', async () => {
       if (typeof DeviceMotionEvent.requestPermission === 'function') {
-        // iOS 13+の場合、許可をリクエスト
         const permission = await DeviceMotionEvent.requestPermission();
         if (permission === 'granted') {
-          // 許可が得られたら、加速度センサーを有効にして、表示エリアを表示
           enableAccelerometer();
           accelerationDisplay.style.display = 'block';
           requestPermissionButton.style.display = 'none';
@@ -73,7 +71,6 @@
           alert("加速度センサーへのアクセスが拒否されました。");
         }
       } else {
-        // iOS以外のデバイスでは、直接加速度センサーを有効にする
         enableAccelerometer();
         accelerationDisplay.style.display = 'block';
         requestPermissionButton.style.display = 'none';
