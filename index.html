@@ -112,15 +112,21 @@
       if (typeof DeviceMotionEvent.requestPermission === 'function') {
         const permission = await DeviceMotionEvent.requestPermission();
         if (permission === 'granted') {
-          enableAccelerometer();
-          accelerationDisplay.style.display = 'block';
+          // 2秒のディレイを置いてから計測を開始
+          setTimeout(() => {
+            enableAccelerometer();
+            accelerationDisplay.style.display = 'block';
+          }, 2000);
           requestPermissionButton.style.display = 'none';
         } else {
           alert("加速度センサーへのアクセスが拒否されました。");
         }
       } else {
-        enableAccelerometer();
-        accelerationDisplay.style.display = 'block';
+        // 2秒のディレイを置いてから計測を開始
+        setTimeout(() => {
+          enableAccelerometer();
+          accelerationDisplay.style.display = 'block';
+        }, 2000);
         requestPermissionButton.style.display = 'none';
       }
     });
