@@ -11,6 +11,8 @@
 
   <!-- 許可をリクエストするボタン -->
   <button id="requestPermission">加速度センサーの許可をリクエスト</button>
+  <!-- 計測と音を止めるボタン -->
+  <button id="stopMeasurement" style="display: none;">計測と音を止める</button>
 
   <!-- 加速度を表示するエリア -->
   <div id="accelerationDisplay" style="display: none;">
@@ -21,13 +23,16 @@
   </div>
 
   <script>
-    const threshold = 0.7; // 加速度の閾値を0.5に設定
+    const threshold = 0.5; // 加速度の閾値を0.5に設定
     let audio = new Audio('alert-sound.mp3'); // 音声ファイルのパス
     let lastAcceleration = { x: 0, y: 0, z: 0 }; // 前回の加速度データ
+    let intervalId; // setIntervalのID
+    let isMeasuring = false; // 計測中かどうかのフラグ
 
     // DOM要素の取得
     const accelerationDisplay = document.getElementById('accelerationDisplay');
     const requestPermissionButton = document.getElementById('requestPermission');
+    const stopMeasurementButton = document.getElementById('stopMeasurement');
     const accelerationX = document.getElementById('accelerationX');
     const accelerationY = document.getElementById('accelerationY');
     const accelerationZ = document.getElementById('accelerationZ');
@@ -35,20 +40,13 @@
 
     // 加速度センサーを有効にする関数
     function enableAccelerometer() {
-      // デバイスモーションイベントのリスナー
-      window.addEventListener('devicemotion', (event) => {
-        if (event.acceleration) {
-          // 最新の加速度データを取得
-          lastAcceleration = {
-            x: event.acceleration.x || 0,
-            y: event.acceleration.y || 0,
-            z: event.acceleration.z || 0
-          };
-        }
-      });
+      if (isMeasuring) return;
 
+      // デバイスモーションイベントのリスナー
+      window.addEventListener('devicemotion', updateAcceleration);
+      
       // 0.2秒ごとに加速度を処理
-      setInterval(() => {
+      intervalId = setInterval(() => {
         const x = lastAcceleration.x;
         const y = lastAcceleration.y;
         const z = lastAcceleration.z;
@@ -67,6 +65,36 @@
           audio.play();
         }
       }, 200); // 200msごとの間隔
+
+      isMeasuring = true;
+      stopMeasurementButton.style.display = 'inline';
+    }
+
+    // 加速度データを更新する関数
+    function updateAcceleration(event) {
+      if (event.acceleration) {
+        lastAcceleration = {
+          x: event.acceleration.x || 0,
+          y: event.acceleration.y || 0,
+          z: event.acceleration.z || 0
+        };
+      }
+    }
+
+    // 計測と音を止める関数
+    function stopMeasurement() {
+      if (intervalId) {
+        clearInterval(intervalId); // 計測を止める
+        intervalId = null;
+      }
+      window.removeEventListener('devicemotion', updateAcceleration); // イベントリスナーを解除
+      audio.pause(); // 音を止める
+      audio.currentTime = 0; // 再生位置をリセット
+
+      isMeasuring = false;
+      stopMeasurementButton.style.display = 'none';
+      accelerationDisplay.style.display = 'none';
+      requestPermissionButton.style.display = 'inline';
     }
 
     // iOSデバイス用の許可リクエスト
@@ -86,6 +114,9 @@
         requestPermissionButton.style.display = 'none';
       }
     });
+
+    // 「計測と音を止める」ボタンのリスナー
+    stopMeasurementButton.addEventListener('click', stopMeasurement);
   </script>
 </body>
 </html>
