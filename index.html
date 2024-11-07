@@ -21,8 +21,9 @@
   </div>
 
   <script>
-    const threshold = 0.8; // 加速度の閾値を0.5に設定
+    const threshold = 0.5; // 加速度の閾値を0.5に設定
     let audio = new Audio('alert-sound.mp3'); // 音声ファイルのパス
+    let lastAcceleration = { x: 0, y: 0, z: 0 }; // 前回の加速度データ
 
     // DOM要素の取得
     const accelerationDisplay = document.getElementById('accelerationDisplay');
@@ -36,27 +37,36 @@
     function enableAccelerometer() {
       // デバイスモーションイベントのリスナー
       window.addEventListener('devicemotion', (event) => {
-        const acceleration = event.acceleration;
-        if (acceleration) {
-          const x = acceleration.x || 0;
-          const y = acceleration.y || 0;
-          const z = acceleration.z || 0;
-
-          // 総合加速度を計算
-          const totalAccel = Math.sqrt(x ** 2 + y ** 2 + z ** 2);
-
-          // HTMLの要素に加速度を表示
-          accelerationX.textContent = x.toFixed(2);
-          accelerationY.textContent = y.toFixed(2);
-          accelerationZ.textContent = z.toFixed(2);
-          totalAcceleration.textContent = totalAccel.toFixed(2);
-
-          // 加速度が閾値を下回った場合に音を鳴らす
-          if (totalAccel < threshold) {
-            audio.play();
-          }
+        if (event.acceleration) {
+          // 最新の加速度データを取得
+          lastAcceleration = {
+            x: event.acceleration.x || 0,
+            y: event.acceleration.y || 0,
+            z: event.acceleration.z || 0
+          };
         }
       });
+
+      // 0.2秒ごとに加速度を処理
+      setInterval(() => {
+        const x = lastAcceleration.x;
+        const y = lastAcceleration.y;
+        const z = lastAcceleration.z;
+
+        // 総合加速度を計算
+        const totalAccel = Math.sqrt(x ** 2 + y ** 2 + z ** 2);
+
+        // HTMLの要素に加速度を表示
+        accelerationX.textContent = x.toFixed(2);
+        accelerationY.textContent = y.toFixed(2);
+        accelerationZ.textContent = z.toFixed(2);
+        totalAcceleration.textContent = totalAccel.toFixed(2);
+
+        // 加速度が閾値を下回った場合に音を鳴らす
+        if (totalAccel < threshold) {
+          audio.play();
+        }
+      }, 200); // 200msごとの間隔
     }
 
     // iOSデバイス用の許可リクエスト
