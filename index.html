@@ -33,7 +33,7 @@
   </div>
 
   <script>
-    const threshold = 0.5; // 加速度の閾値を0.5に設定
+    const threshold = 0.9; // 加速度の閾値を0.5に設定
     let audio = new Audio('alert-sound.mp3'); // 音声ファイルのパス
     let lastAcceleration = { x: 0, y: 0, z: 0 }; // 前回の加速度データ
     let intervalId; // setIntervalのID
@@ -74,7 +74,7 @@
         if (totalAccel < threshold) {
           audio.play();
         }
-      }, 200); // 200msごとの間隔
+      }, 100); // 200msごとの間隔
 
       isMeasuring = true;
       stopMeasurementButton.style.display = 'inline';
